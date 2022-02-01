@@ -11,8 +11,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+import org.springframework.web.bind.annotation.RequestParam;
 
+import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 import static org.springframework.util.Assert.*;
 
@@ -67,6 +70,19 @@ public class CartServiceImpl implements CartService {
         LOGGER.info("Searching Register");
         notNull(id, "Invalid ID");
         return cartRepository.findById(id).map(this.responseMapper::map);
+    }
+
+
+    @Override
+    public List<CartResponse> findBySearch(@RequestParam(value = "q", required = false) String q,
+                                           @RequestParam(value = "min_price", required = false) Integer max_price,
+                                           @RequestParam(value = "max_price", required = false) Integer min_price) {
+        LOGGER.info("Searching Pieces of Information");
+//        notNull(q, "Invalid Request");
+        return this.cartRepository.findBySearch(q.toUpperCase(), min_price, max_price)
+                .stream()
+                .map(CartResponse::converter)
+                .collect(Collectors.toList());
     }
 
     @Override
