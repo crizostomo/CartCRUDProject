@@ -1,14 +1,10 @@
 package com.br.developer.cart.persistence.entity;
 
-import lombok.Getter;
-import lombok.Setter;
-
 import javax.persistence.*;
 import java.util.function.Function;
 
 @Entity
 @Table(name = "cart")
-@Getter @Setter
 public class Cart {
 
     @Id
@@ -25,4 +21,40 @@ public class Cart {
     @Column(name = "price")
     private Integer price;
 
+
+    public <R> R map(Function<Cart, R> func){
+        return func.apply(this);
+    }
+
+    public Long getId() {
+        return id;
+    }
+
+    public void setId(Long id) {
+        this.id = id;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public String getDescription() {
+        return description;
+    }
+
+    public void setDescription(String description) {
+        this.description = description;
+    }
+
+    public Integer getPrice() {
+        return price;
+    }
+
+    public void setPrice(Integer price) {
+        this.price = price;
+    }
 }

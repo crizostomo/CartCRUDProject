@@ -4,6 +4,7 @@ import com.br.developer.cart.model.request.CartRequest;
 import com.br.developer.cart.model.response.CartResponse;
 import com.br.developer.cart.persistence.entity.Cart;
 import com.br.developer.cart.persistence.repository.CartRepository;
+import com.br.developer.cart.service.mapper.Mapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -16,7 +17,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
-import static org.springframework.util.Assert.*;
+import static org.springframework.util.Assert.notNull;
 
 
 @Service
@@ -53,13 +54,13 @@ public class CartServiceImpl implements CartService {
         LOGGER.info("Updating register");
         notNull(id, "Invalid ID");
 
-        Cart cartUpdate = this.requestMapper.map(cartRequest);
+        Cart customerUpdate = this.requestMapper.map(cartRequest);
 
         return cartRepository.findById(id)
                 .map(cart -> {
-                    cart.setName(cartUpdate.getName());
-                    cart.setDescription(cartUpdate.getDescription());
-                    cart.setPrice(cartUpdate.getPrice());
+                    cart.setName(customerUpdate.getName());
+                    cart.setDescription(customerUpdate.getDescription());
+                    cart.setPrice(customerUpdate.getPrice());
                     return this.responseMapper.map(cartRepository.saveAndFlush(cart));
                 });
     }
@@ -77,10 +78,10 @@ public class CartServiceImpl implements CartService {
                                            @RequestParam(value = "min_price", required = false) Integer max_price,
                                            @RequestParam(value = "max_price", required = false) Integer min_price) {
         LOGGER.info("Searching Pieces of Information");
-
+//        notNull(q, "Invalid Request");
         return this.cartRepository.findBySearch(q.toUpperCase(), min_price, max_price)
                 .stream()
-                .map(cart -> this.responseMapper.map(cart))
+                .map(CartResponse::converter)
                 .collect(Collectors.toList());
     }
 

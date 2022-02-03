@@ -19,6 +19,9 @@ public interface CartService {
 
     List<CartResponse> findBySearch(String q, Integer max_price, Integer min_price);
 
+
+    //String toUpperCase, Integer min_price, Integer max_price
+
     boolean delete(Long id);
 
 }
