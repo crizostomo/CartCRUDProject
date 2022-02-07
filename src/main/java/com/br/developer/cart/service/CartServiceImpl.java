@@ -4,7 +4,7 @@ import com.br.developer.cart.model.request.CartRequest;
 import com.br.developer.cart.model.response.CartResponse;
 import com.br.developer.cart.persistence.entity.Cart;
 import com.br.developer.cart.persistence.repository.CartRepository;
-import com.br.developer.cart.service.mapper.Mapper;
+import org.modelmapper.ModelMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -29,24 +29,22 @@ public class CartServiceImpl implements CartService {
     private CartRepository cartRepository;
 
     @Autowired
-    private Mapper<CartRequest, Cart> requestMapper;
-
-    @Autowired
-    private Mapper<Cart, CartResponse> responseMapper;
+    private ModelMapper modelMapper;
 
     @Override
     public CartResponse create(CartRequest cartRequest) {
         LOGGER.info("Creating a product register");
         notNull(cartRequest, "Invalid Request");
-        Cart cart = this.requestMapper.map(cartRequest);
-        return cartRepository.saveAndFlush(cart).map((Cart input) -> this.responseMapper.map(input));
+        Cart cart = cartRepository.saveAndFlush(modelMapper.map(cartRequest, Cart.class));
+        return modelMapper.map(cart, CartResponse.class);
+
     }
 
     @Override
     public Page<CartResponse> getAll(Pageable pageable) {
         LOGGER.info("Searching all registers");
         notNull(pageable, "invalid page");
-        return cartRepository.findAll(pageable).map(cart -> this.responseMapper.map(cart));
+        return cartRepository.findAll(pageable).map(cart -> modelMapper.map(cart, CartResponse.class));
     }
 
     @Override
@@ -54,14 +52,12 @@ public class CartServiceImpl implements CartService {
         LOGGER.info("Updating register");
         notNull(id, "Invalid ID");
 
-        Cart customerUpdate = this.requestMapper.map(cartRequest);
-
         return cartRepository.findById(id)
                 .map(cart -> {
-                    cart.setName(customerUpdate.getName());
-                    cart.setDescription(customerUpdate.getDescription());
-                    cart.setPrice(customerUpdate.getPrice());
-                    return this.responseMapper.map(cartRepository.saveAndFlush(cart));
+                    cart.setName(cartRequest.getName());
+                    cart.setDescription(cartRequest.getDescription());
+                    cart.setPrice(cartRequest.getPrice());
+                    return modelMapper.map(cartRepository.saveAndFlush(cart), CartResponse.class);
                 });
     }
 
@@ -69,7 +65,12 @@ public class CartServiceImpl implements CartService {
     public Optional<CartResponse> get(Long id) {
         LOGGER.info("Searching Register");
         notNull(id, "Invalid ID");
-        return cartRepository.findById(id).map(this.responseMapper::map);
+        Optional<Cart> byId = cartRepository.findById(id);
+        if(byId.isPresent()){
+            CartResponse map = modelMapper.map(byId.get(), CartResponse.class);
+            return Optional.of(map);
+        }
+        return Optional.empty();
     }
 
 
